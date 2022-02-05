@@ -1,0 +1,41 @@
+# Razzle default .gitignore
+
+logs
+*.log
+npm-debug.log*
+.DS_Store
+
+coverage
+node_modules
+build
+dist
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Custom .gitignore rules
+
+.*
+!.gitignore
+!.circleci
+!.npmignore
+!.eslintignore
+!.eslintrc*
+!.prettierrc*
+!.babelrc*
+!.editorconfig
+!.storybook
+!.nvmrc
+*.tgz
+
+# Integration test artifacts
+
+cypress/videos
+cypress/screenshots
+tests_output
+
+# Documentation output
+
+docs/output.json
+docs/storybook
