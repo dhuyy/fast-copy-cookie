@@ -1,24 +1,32 @@
-// Initialize button with user's preferred color
-let changeColor = document.getElementById('changeColor');
+const copyButton = document.getElementById('copy-button');
+const pasteButton = document.getElementById('paste-button');
 
-chrome.storage.sync.get('color', ({ color }) => {
-  changeColor.style.backgroundColor = color;
-});
-
-// When the button is clicked, inject setPageBackgroundColor into current page
-changeColor.addEventListener('click', async () => {
+(async function initPopupWindow() {
   let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-  chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    function: setPageBackgroundColor,
-  });
+  if (tab?.url) {
+    try {
+      let { href } = new URL(tab.url);
+
+      await chrome.storage.sync.set({ tabUrl: href });
+    } catch {}
+  }
+})();
+
+copyButton.addEventListener('click', async () => {
+  const { tabUrl } = await chrome.storage.sync.get('tabUrl');
+
+  const name = 'H24AuthToken';
+  const cookie = await chrome.cookies.get({ name, url: tabUrl });
+
+  await chrome.storage.sync.set({ [cookie.name]: cookie.value });
 });
 
-// The body of this function will be executed as a content script inside the
-// current page
-function setPageBackgroundColor() {
-  chrome.storage.sync.get('color', ({ color }) => {
-    document.body.style.backgroundColor = color;
-  });
-}
+pasteButton.addEventListener('click', async () => {
+  const { tabUrl } = await chrome.storage.sync.get('tabUrl');
+
+  const name = 'H24AuthToken';
+  const value = await chrome.storage.sync.get(name);
+
+  await chrome.cookies.set({ name, url: tabUrl, value: value.H24AuthToken });
+});
