@@ -1,0 +1,21 @@
+.row {
+  justify-content: center;
+}
+
+.main-column {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.main-column .list-group,
+.form-group {
+  width: 100%;
+}
+
+.main-column .list-group .list-group-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

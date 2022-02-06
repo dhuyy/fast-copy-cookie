@@ -1,6 +1,6 @@
 {
   "name": "Fast Copy Cookie",
-  "description": "Copy cookies from one tab to another with a single click.",
+  "description": "A simple Chrome extension that copies cookies from one tab to another with a single click.",
   "version": "1.0",
   "manifest_version": 3,
   "background": {
