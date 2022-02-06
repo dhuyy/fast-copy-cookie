@@ -1,4 +1,5 @@
 const STORAGE_COOKIE_NAMES_KEY = 'cookies';
+const STORAGE_COOKIE_DATA_KEY = 'cookiesData';
 
 const copyButton = document.getElementById('copy-button');
 const pasteButton = document.getElementById('paste-button');
@@ -19,20 +20,46 @@ copyButton.addEventListener('click', async () => {
   const { tabUrl } = await chrome.storage.local.get('tabUrl');
   const { cookies } = await chrome.storage.local.get(STORAGE_COOKIE_NAMES_KEY);
 
-  // @TODO Iterate over all cookie names stored
-  const name = cookies[0];
-  const cookie = await chrome.cookies.get({ name, url: tabUrl });
+  let cookiesData = [];
+  for (let cookieName of cookies) {
+    const record = await chrome.cookies.get({
+      name: cookieName,
+      url: tabUrl,
+    });
 
-  await chrome.storage.local.set({ [cookie.name]: cookie.value });
+    if (record) {
+      const { session, domain, hostOnly, ...cookie } = record;
+
+      cookiesData.push(cookie);
+    }
+  }
+
+  await chrome.storage.local.set({ cookiesData });
+
+  copyButton
+    .querySelector('.bi')
+    .setAttribute('class', 'bi bi-clipboard-check');
+  setTimeout(() => {
+    copyButton.querySelector('.bi').setAttribute('class', 'bi bi-clipboard');
+  }, 2000);
 });
 
 pasteButton.addEventListener('click', async () => {
   const { tabUrl } = await chrome.storage.local.get('tabUrl');
-  const { cookies } = await chrome.storage.local.get(STORAGE_COOKIE_NAMES_KEY);
+  const { cookiesData } = await chrome.storage.local.get(
+    STORAGE_COOKIE_DATA_KEY
+  );
 
-  // @TODO Iterate over all cookie names stored
-  const name = cookies[0];
-  const value = await chrome.storage.local.get(name);
+  for (let data of cookiesData) {
+    await chrome.cookies.set({ ...data, url: tabUrl });
+  }
 
-  await chrome.cookies.set({ name, url: tabUrl, value: value.H24AuthToken });
+  pasteButton
+    .querySelector('.bi')
+    .setAttribute('class', 'bi bi-file-earmark-check');
+  setTimeout(() => {
+    pasteButton
+      .querySelector('.bi')
+      .setAttribute('class', 'bi bi-file-earmark');
+  }, 2000);
 });
