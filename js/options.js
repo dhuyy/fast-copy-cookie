@@ -6,12 +6,6 @@ const COOKIE_NAME_INPUT_NAME = 'cookie-name';
 const DATA_ACTION_DELETE_ITEM = 'delete-item';
 const DISABLED_LIST_ITEM_SELECTOR = '[data-action="disabled-item"]';
 
-const COOKIE_NAMES_FROM_STORAGE = [
-  'H24AuthToken',
-  'H24DeviceID',
-  'H24DeviceSessionID',
-];
-
 const disabledListItem = document.querySelector(DISABLED_LIST_ITEM_SELECTOR);
 
 const isEmptyObject = object =>
@@ -55,10 +49,23 @@ const toggleDisabledListItem = () => {
 };
 
 const retrieveCookieNamesFromStorage = async () => {
-  // @TODO: fetch cookie names from Chrome Extensions API
-  const cookies = {};
+  const { cookies } = await chrome.storage.local.get(STORAGE_COOKIE_NAMES_KEY);
 
-  return isEmptyObject(cookies) ? null : COOKIE_NAMES_FROM_STORAGE;
+  return cookies;
+};
+
+const setCookieOnStorage = async cookieName => {
+  const record = await chrome.storage.local.get(STORAGE_COOKIE_NAMES_KEY);
+  const cookies = [...record.cookies, cookieName];
+
+  await chrome.storage.local.set({ cookies });
+};
+
+const removeCookieFromStorage = async cookieName => {
+  const record = await chrome.storage.local.get(STORAGE_COOKIE_NAMES_KEY);
+  const cookies = record.cookies.filter(listItem => listItem !== cookieName);
+
+  await chrome.storage.local.set({ cookies });
 };
 
 const renderCookieNames = cookies => {
@@ -71,6 +78,20 @@ const renderCookieNames = cookies => {
   toggleDisabledListItem();
 };
 
+const isCookieNameInvalid = cookieName => {
+  if (cookieName === '') {
+    return true;
+  }
+
+  const [list] = document.getElementsByClassName(LIST_CLASS);
+
+  return Boolean(
+    Array.from(list.children).find(
+      listItem => listItem.innerText === cookieName
+    )
+  );
+};
+
 const registerAddButtonEventListener = () => {
   const form = document.querySelector('form');
   const [list] = document.getElementsByClassName(LIST_CLASS);
@@ -80,11 +101,16 @@ const registerAddButtonEventListener = () => {
 
     const [list] = document.getElementsByClassName(LIST_CLASS);
     const cookieName =
-      event.currentTarget.elements[COOKIE_NAME_INPUT_NAME].value;
+      event.currentTarget.elements[COOKIE_NAME_INPUT_NAME].value.trim();
 
-    list.append(createListItem({ name: cookieName }));
+    if (!isCookieNameInvalid(cookieName)) {
+      list.append(createListItem({ name: cookieName }));
 
-    toggleDisabledListItem();
+      toggleDisabledListItem();
+      setCookieOnStorage(cookieName);
+    } else {
+      console.log(`"${cookieName}" cookie name is not valid.`);
+    }
   });
 };
 
@@ -95,15 +121,28 @@ const registerDeleteButtonEventListener = () => {
     if (target.dataset['action'] === DATA_ACTION_DELETE_ITEM) {
       target.closest(`.${LIST_ITEM_CLASS}`).remove();
 
+      const cookieName = target.closest(`.${LIST_ITEM_CLASS}`).innerText;
+
+      removeCookieFromStorage(cookieName);
       toggleDisabledListItem();
     }
   });
 };
 
+const initLocalStorageRecord = async () => {
+  const record = await chrome.storage.local.get(STORAGE_COOKIE_NAMES_KEY);
+
+  if (isEmptyObject(record)) {
+    await chrome.storage.local.set({ cookies: [] });
+  }
+};
+
 (async () => {
+  initLocalStorageRecord();
+
   const cookies = await retrieveCookieNamesFromStorage();
 
-  if (cookies) {
+  if (cookies.length > 0) {
     renderCookieNames(cookies);
   }
 
