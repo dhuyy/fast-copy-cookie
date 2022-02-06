@@ -78,11 +78,7 @@ const renderCookieNames = cookies => {
   toggleDisabledListItem();
 };
 
-const isCookieNameInvalid = cookieName => {
-  if (cookieName === '') {
-    return true;
-  }
-
+const isCookieNameDuplicated = cookieName => {
   const [list] = document.getElementsByClassName(LIST_CLASS);
 
   return Boolean(
@@ -90,6 +86,15 @@ const isCookieNameInvalid = cookieName => {
       listItem => listItem.innerText === cookieName
     )
   );
+};
+
+const dispatchToastrNotification = options => {
+  const defaults = { delay: 3000, placement: 'bottom-right' };
+
+  new bs5.Toast({
+    ...defaults,
+    ...options,
+  }).show();
 };
 
 const registerAddButtonEventListener = () => {
@@ -103,14 +108,33 @@ const registerAddButtonEventListener = () => {
     const cookieName =
       event.currentTarget.elements[COOKIE_NAME_INPUT_NAME].value.trim();
 
-    if (!isCookieNameInvalid(cookieName)) {
-      list.append(createListItem({ name: cookieName }));
+    if (cookieName === '') {
+      dispatchToastrNotification({
+        className: 'bg-warning',
+        body: 'Cookie name must not be empty.',
+      });
 
-      toggleDisabledListItem();
-      setCookieOnStorage(cookieName);
-    } else {
-      console.log(`"${cookieName}" cookie name is not valid.`);
+      return;
     }
+
+    if (isCookieNameDuplicated(cookieName)) {
+      dispatchToastrNotification({
+        className: 'bg-warning',
+        body: 'Cookie name was already added.',
+      });
+
+      return;
+    }
+
+    list.append(createListItem({ name: cookieName }));
+
+    toggleDisabledListItem();
+    setCookieOnStorage(cookieName);
+
+    dispatchToastrNotification({
+      className: 'bg-success text-light',
+      body: `"${cookieName}" cookie name has been added.`,
+    });
   });
 };
 
@@ -125,6 +149,11 @@ const registerDeleteButtonEventListener = () => {
 
       removeCookieFromStorage(cookieName);
       toggleDisabledListItem();
+
+      dispatchToastrNotification({
+        className: 'bg-danger text-light',
+        body: `"${cookieName}" cookie name has been removed.`,
+      });
     }
   });
 };
