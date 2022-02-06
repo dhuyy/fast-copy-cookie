@@ -1,16 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <style>
-      #copy-button {
-        margin-bottom: 8px;
-      }
-    </style>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css"
+    />
+    <link rel="stylesheet" href="css/popup.css" />
   </head>
   <body>
-    <button id="copy-button">Copy Cookies</button>
-    <br />
-    <button id="paste-button">Paste Cookies</button>
+    <div class="main-container">
+      <div class="btn-group" role="group" aria-label="Basic example">
+        <button id="copy-button" type="button" class="btn btn-outline-primary">
+          <i class="bi bi-clipboard"></i> Copy Cookies
+        </button>
+        <button id="paste-button" type="button" class="btn btn-outline-primary">
+          <i class="bi bi-file-earmark"></i> Paste Cookies
+        </button>
+      </div>
+    </div>
+
     <script src="popup.js"></script>
   </body>
 </html>
